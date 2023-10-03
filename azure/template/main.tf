@@ -1,0 +1,76 @@
+module "rg" {
+  source      = "../module/resourcegroup"
+  rg_name     = var.rg_name
+  rg_location = var.rg_location
+}
+module "vnet" {
+  source                  = "../module/vnet"
+  rg_name                 = module.rg.rg_name
+  rg_location             = module.rg.rg_location
+  vnet_1                  = var.vnet_1
+  vnet_1_address_space    = var.vnet_1_address_space
+  subnet_1                = var.subnet_1
+  subnet_1_address_prefix = var.subnet_1_address_prefix
+  subnet_2                = var.subnet_2
+  subnet_2_address_prefix = var.subnet_2_address_prefix
+  private_cluster_enabled = var.private_cluster_enabled
+  depends_on              = [module.rg]
+}
+module "aks" {
+  source                  = "../module/aks"
+  rg_name                 = module.rg.rg_name
+  rg_location             = module.rg.rg_location
+  aks_name                = var.aks_name
+  dns_prefix              = var.dns_prefix
+  aks_version             = var.aks_version
+  identity_type           = var.identity_type
+  default_node_pool_name  = var.default_node_pool_name
+  node_count              = var.node_count
+  default_node_vm_size    = var.default_node_vm_size
+  subnet_1_id             = module.vnet.subnet_1_id
+  enable_auto_scaling     = var.enable_auto_scaling
+  min_node_count          = var.min_node_count
+  max_node_count          = var.max_node_count
+  default_node_pool_type  = var.default_node_pool_type
+  network_plugin          = var.network_plugin
+  dns_service_ip          = var.dns_service_ip
+  service_cidr            = var.service_cidr
+  pod_cidr                = var.pod_cidr
+  private_cluster_enabled = var.private_cluster_enabled
+  depends_on              = [module.vnet]
+}
+module "vm" {
+  source                                   = "../module/virtualmachine"
+  rg_name                                  = module.rg.rg_name
+  rg_location                              = module.rg.rg_location
+  network_ip_config                        = var.network_ip_config
+  vnet_subnet_id_2                         = module.vnet.subnet_id_2
+  private_ip_address_allocation            = var.private_ip_address_allocation
+  public_ip_name                           = var.public_ip_name
+  public_ip_address_allocation             = var.public_ip_address_allocation
+  network_security_group_name              = var.network_security_group_name
+  security_rule_name                       = var.security_rule_name
+  security_rule_priority                   = var.security_rule_priority
+  security_rule_direction                  = var.security_rule_direction
+  security_rule_access                     = var.security_rule_access
+  security_rule_protocol                   = var.security_rule_protocol
+  security_rule_source_port_range          = var.security_rule_source_port_range
+  security_rule_destination_port_range     = var.security_rule_destination_port_range
+  security_rule_source_address_prefix      = var.security_rule_source_address_prefix
+  security_rule_destination_address_prefix = var.security_rule_destination_address_prefix
+  vm_name                                  = var.vm_name
+  vm_size                                  = var.vm_size
+  os_disk_name                             = var.os_disk_name
+  os_disk_caching                          = var.os_disk_caching
+  os_disk_storage_account_type             = var.os_disk_storage_account_type
+  source_image_publisher                   = var.source_image_publisher
+  source_image_offer                       = var.source_image_offer
+  source_image_sku                         = var.source_image_sku
+  source_image_version                     = var.source_image_version
+  computer_name                            = var.computer_name
+  admin_username                           = var.admin_username
+  pass                                     = var.pass
+  disable_password_authentication          = var.disable_password_authentication
+  private_cluster_enabled                  = var.private_cluster_enabled
+  depends_on                               = [module.aks]
+}
