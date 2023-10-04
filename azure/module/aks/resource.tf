@@ -31,9 +31,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     pod_cidr       = var.pod_cidr
   }
   private_cluster_enabled = var.private_cluster_enabled
-  # lifecycle {
-  #   ignore_changes = [ default_node_pool ]
-  # }
+ 
 
 }
 resource "local_sensitive_file" "kubeconfig" {
@@ -41,12 +39,4 @@ resource "local_sensitive_file" "kubeconfig" {
   content = azurerm_kubernetes_cluster.aks_cluster.kube_config_raw
   filename = "./kubeconfig"
 }
-# resource "null_resource" "get_kubeconfig" {  
-#   depends_on = [azurerm_kubernetes_cluster.aks_cluster]
-#    triggers = {    
-#      always_run = "${timestamp()}"  
-#       }  
-#  provisioner "local-exec" { 
-#       command = "az aks get-credentials --resource-group ${var.rg_name} --name ${var.aks_name} --overwrite-existing --file ./.newkubeconfig.yaml"  
-#        }
-#         }
+
